@@ -1,2 +1,3 @@
 pandas
-pyQT5
+pyQt5
+pyinstaller

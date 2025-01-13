@@ -1,3 +1,7 @@
 venv/
 .DS_Store
 pythonpath.txt
+__pycache__
+build/
+dist/
+pokalculator.spec
