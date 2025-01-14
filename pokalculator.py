@@ -7,14 +7,14 @@ class CsvDropBox(QtWidgets.QWidget):
         super().__init__()
         self.setWindowTitle("Poker Transfer Calculator (떡준이꺼)")
         #self.setFixedSize(1200, 900)
-        self.resize(500, 400)
+        self.resize(500, 300)
         
         # Layout setup
         self.layout = QtWidgets.QVBoxLayout(self)
         
         # Label for drag-and-drop
         self.drop_label = QtWidgets.QLabel("Drop CSV Here", self)
-        self.drop_label.setFixedSize(400, 300)
+        self.drop_label.setFixedSize(400, 200)
         self.drop_label.setAlignment(QtCore.Qt.AlignCenter)
         self.drop_label.setStyleSheet("""
             QLabel {
@@ -64,6 +64,7 @@ class CsvDropBox(QtWidgets.QWidget):
                 break
             else:
                 # Text area to display the file contents
+                self.text_area_exists()
                 self.text_area = QtWidgets.QTextEdit(self)
                 self.text_area.setReadOnly(True)
                 self.layout.addWidget(self.text_area)
@@ -86,6 +87,7 @@ class CsvDropBox(QtWidgets.QWidget):
 
         except Exception as e:
             # Text area to display the file contents
+            self.text_area_exists()
             self.text_area = QtWidgets.QTextEdit(self)
             self.text_area.setReadOnly(True)
             self.layout.addWidget(self.text_area)
@@ -119,6 +121,11 @@ class CsvDropBox(QtWidgets.QWidget):
             self.layout.removeWidget(self.transfer_label)
             self.table_widget = None
             self.transfer_label = None
+            
+    def text_area_exists(self):
+        if self.text_area is not None:
+            self.layout.removeWidget(self.text_area)
+            self.text_area = None
 
     def print_transfers(self, transfers):
             self.transfer_table_exists()
@@ -141,8 +148,18 @@ class CsvDropBox(QtWidgets.QWidget):
             # Add table widget to layout
             self.transfer_label = QtWidgets.QLabel("Transfers", self)
             self.transfer_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+            self.text_area_exists()
             self.layout.addWidget(self.transfer_label)
             self.layout.addWidget(self.table_widget)
+            
+    def print_editable_data(self, editable_data):
+        # [(id, nicknames, net)]
+        # Create QTableWidget
+        self.table_widget = QtWidgets.QTableWidget(self)
+        self.table_widget.setRowCount(len(editable_data))
+        self.table_widget.setColumnCount(3)
+        self.table_widget.setHorizontalHeaderLabels(['ID', 'Nickname', 'Net'])
+        
 app = QtWidgets.QApplication([])
 window = CsvDropBox()
 window.show()
