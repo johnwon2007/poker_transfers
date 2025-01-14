@@ -31,7 +31,7 @@ class CsvDropBox(QtWidgets.QWidget):
         self.upload_button.clicked.connect(self.upload_csv)
         self.layout.addWidget(self.upload_button, alignment=QtCore.Qt.AlignCenter)
 
-        # Text area to display the file contents
+        # # Text area to display the file contents
         # self.text_area = QtWidgets.QTextEdit(self)
         # self.text_area.setReadOnly(True)
         # self.layout.addWidget(self.text_area)
@@ -44,6 +44,9 @@ class CsvDropBox(QtWidgets.QWidget):
         # self.table_widget = QtWidgets.QTableWidget(self)
         # self.table_widget.setFixedSize(1000, 1000)
         # self.layout.addWidget(self.table_widget, alignment=QtCore.Qt.AlignCenter)
+        self.table_widget = None
+        self.text_area = None
+        self.transfer_label = None
 
     def dragEnterEvent(self, event):
         """Handle when a file is dragged into the widget."""
@@ -60,6 +63,10 @@ class CsvDropBox(QtWidgets.QWidget):
                 self.load_csv(f)
                 break
             else:
+                # Text area to display the file contents
+                self.text_area = QtWidgets.QTextEdit(self)
+                self.text_area.setReadOnly(True)
+                self.layout.addWidget(self.text_area)
                 self.text_area.setText("Invalid file type. Please drop a CSV file.")
                 break
 
@@ -78,6 +85,10 @@ class CsvDropBox(QtWidgets.QWidget):
             self.print_transfers(transfers)
 
         except Exception as e:
+            # Text area to display the file contents
+            self.text_area = QtWidgets.QTextEdit(self)
+            self.text_area.setReadOnly(True)
+            self.layout.addWidget(self.text_area)
             self.text_area.setText(f"Error loading file: {str(e)}")
             
     def adjust_window_to_table(self):
@@ -101,8 +112,16 @@ class CsvDropBox(QtWidgets.QWidget):
 
         # Set the table's height
         self.table_widget.setFixedHeight(total_height)
+        
+    def transfer_table_exists(self):
+        if self.table_widget is not None:
+            self.layout.removeWidget(self.table_widget)
+            self.layout.removeWidget(self.transfer_label)
+            self.table_widget = None
+            self.transfer_label = None
 
     def print_transfers(self, transfers):
+            self.transfer_table_exists()
             # Create QTableWidget
             self.table_widget = QtWidgets.QTableWidget(self)
             self.table_widget.setRowCount(len(transfers))
@@ -120,6 +139,9 @@ class CsvDropBox(QtWidgets.QWidget):
             self.adjust_table_height()
             self.adjust_window_to_table()
             # Add table widget to layout
+            self.transfer_label = QtWidgets.QLabel("Transfers", self)
+            self.transfer_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+            self.layout.addWidget(self.transfer_label)
             self.layout.addWidget(self.table_widget)
 app = QtWidgets.QApplication([])
 window = CsvDropBox()
