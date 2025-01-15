@@ -1,20 +1,21 @@
 from PyQt5 import QtWidgets, QtCore
 # import pandas as pd
 from backend_service.ledger_to_transfer import ledger_tranfer_calculator as ltc
+from money_service.money_calculator import calculate_minimal_transfers as cmt
 
 class CsvDropBox(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Poker Transfer Calculator (떡준이꺼)")
         #self.setFixedSize(1200, 900)
-        self.resize(500, 300)
+        self.resize(400, 300)
         
         # Layout setup
         self.layout = QtWidgets.QVBoxLayout(self)
         
         # Label for drag-and-drop
         self.drop_label = QtWidgets.QLabel("Drop CSV Here", self)
-        self.drop_label.setFixedSize(400, 200)
+        self.drop_label.setFixedSize(300, 200)
         self.drop_label.setAlignment(QtCore.Qt.AlignCenter)
         self.drop_label.setStyleSheet("""
             QLabel {
@@ -31,22 +32,16 @@ class CsvDropBox(QtWidgets.QWidget):
         self.upload_button.clicked.connect(self.upload_csv)
         self.layout.addWidget(self.upload_button, alignment=QtCore.Qt.AlignCenter)
 
-        # # Text area to display the file contents
-        # self.text_area = QtWidgets.QTextEdit(self)
-        # self.text_area.setReadOnly(True)
-        # self.layout.addWidget(self.text_area)
-
         # Enable drag-and-drop on the label
         self.drop_label.dragEnterEvent = self.dragEnterEvent
         self.drop_label.dropEvent = self.dropEvent
-        
-        #Table Area
-        # self.table_widget = QtWidgets.QTableWidget(self)
-        # self.table_widget.setFixedSize(1000, 1000)
-        # self.layout.addWidget(self.table_widget, alignment=QtCore.Qt.AlignCenter)
+
+        #initializing widgets
         self.table_widget = None
         self.text_area = None
         self.transfer_label = None
+        self.edit_table = None
+        self.edit_label = None
 
     def dragEnterEvent(self, event):
         """Handle when a file is dragged into the widget."""
@@ -82,7 +77,8 @@ class CsvDropBox(QtWidgets.QWidget):
         try:
             # df = pd.read_csv(file_path)
             # self.text_area.setText(f"Loaded: {file_path}\n\n{df.head().to_string()}")
-            transfers = ltc(file_path)
+            transfers, id_nick_net = ltc(file_path)
+            self.print_edit_table(id_nick_net)
             self.print_transfers(transfers)
 
         except Exception as e:
@@ -98,9 +94,11 @@ class CsvDropBox(QtWidgets.QWidget):
         table_width = self.table_widget.horizontalHeader().length() + self.table_widget.verticalScrollBar().sizeHint().width()
         table_height = self.table_widget.verticalHeader().length() + self.table_widget.horizontalScrollBar().sizeHint().height()
         
+        edit_table_width = self.edit_table.horizontalHeader().length() + self.edit_table.verticalScrollBar().sizeHint().width()
+        edit_table_height = self.edit_table.verticalHeader().length() + self.edit_table.horizontalScrollBar().sizeHint().height()
         # Add margins to account for window decorations and layout spacing
         margin = 50
-        self.resize(table_width + margin, table_height + margin)
+        self.resize(max(table_width, edit_table_width) + margin, max(table_height, edit_table_height) + margin)
 
     def adjust_table_height(self):
         # Calculate the total height required for all rows
@@ -115,6 +113,19 @@ class CsvDropBox(QtWidgets.QWidget):
         # Set the table's height
         self.table_widget.setFixedHeight(total_height)
         
+    def adjust_edit_table_height(self):
+        # Calculate the total height required for all rows
+        total_height = sum(self.edit_table.rowHeight(row) for row in range(self.edit_table.rowCount()))
+
+        # Add the height of the horizontal header
+        total_height += self.edit_table.horizontalHeader().height()
+
+        # Add some margins to account for spacing
+        total_height += 2 * self.edit_table.frameWidth()
+
+        # Set the table's height
+        self.edit_table.setFixedHeight(total_height)
+        
     def transfer_table_exists(self):
         if self.table_widget is not None:
             self.layout.removeWidget(self.table_widget)
@@ -126,6 +137,71 @@ class CsvDropBox(QtWidgets.QWidget):
         if self.text_area is not None:
             self.layout.removeWidget(self.text_area)
             self.text_area = None
+    
+    def edit_table_exists(self):
+        if self.edit_table is not None:
+            self.layout.removeWidget(self.edit_table)
+            self.layout.removeWidget(self.edit_label)
+            self.layout.removeWidget(self.calculate_button)
+            self.edit_table = None
+            self.edit_label = None
+            self.calculate_button = None
+
+    def print_edit_table(self, id_nick_net):
+        self.edit_table_exists()
+        
+        # Create QTableWidget
+        self.edit_table = QtWidgets.QTableWidget(self)
+        self.edit_table.setRowCount(len(id_nick_net))
+        self.edit_table.setColumnCount(3)
+        self.edit_table.setHorizontalHeaderLabels(['Nickname', 'ID', 'Net'])
+        
+        # Populate table
+        for row, (id, nickname, net) in enumerate(id_nick_net):
+            self.edit_table.setItem(row, 0, QtWidgets.QTableWidgetItem(nickname))
+            self.edit_table.setItem(row, 1, QtWidgets.QTableWidgetItem(id))
+            self.edit_table.setItem(row, 2, QtWidgets.QTableWidgetItem(str(net)))
+        
+        # Optionally resize based on content
+        self.edit_table.resizeColumnsToContents()
+        self.edit_table.resizeRowsToContents()
+        self.adjust_edit_table_height()
+        # self.adjust_window_to_table()
+        
+        # Add label and table to layout
+        self.edit_label = QtWidgets.QLabel("Edit: Nickname | net", self)
+        self.edit_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        self.text_area_exists()
+        self.layout.addWidget(self.edit_label)
+        self.layout.addWidget(self.edit_table)
+        
+        # Create a button
+        self.calculate_button = QtWidgets.QPushButton("Re-calculate", self)
+        self.calculate_button.setStyleSheet("font-size: 14px; padding: 5px 10px;")
+        
+        # Connect button's clicked signal to a wrapper function
+        def on_calculate_button_clicked():
+            # Extract data from the table into a dictionary
+            balances = {
+                self.edit_table.item(row, 0).text(): int(self.edit_table.item(row, 2).text())
+                for row in range(self.edit_table.rowCount())
+                if self.edit_table.item(row, 0) and self.edit_table.item(row, 2)  # Ensure items exist
+            }
+            
+            # Debug print to verify the extracted data
+            print("Extracted balances dictionary:", balances)
+            
+            # Call the calculate_money function with the formatted data
+            transfers = cmt(balances)
+            self.print_transfers(transfers)
+        
+        self.calculate_button.clicked.connect(on_calculate_button_clicked)
+        
+        
+        # Add button to layout
+        self.layout.addWidget(self.calculate_button)
+        
+
 
     def print_transfers(self, transfers):
             self.transfer_table_exists()
@@ -151,14 +227,6 @@ class CsvDropBox(QtWidgets.QWidget):
             self.text_area_exists()
             self.layout.addWidget(self.transfer_label)
             self.layout.addWidget(self.table_widget)
-            
-    def print_editable_data(self, editable_data):
-        # [(id, nicknames, net)]
-        # Create QTableWidget
-        self.table_widget = QtWidgets.QTableWidget(self)
-        self.table_widget.setRowCount(len(editable_data))
-        self.table_widget.setColumnCount(3)
-        self.table_widget.setHorizontalHeaderLabels(['ID', 'Nickname', 'Net'])
         
 app = QtWidgets.QApplication([])
 window = CsvDropBox()

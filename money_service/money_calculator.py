@@ -1,4 +1,4 @@
-def calculate_minimal_transfers(balances):
+def calculate_minimal_transfers(balances: dict):
     """
     Return the list of tranfers to be made with amount
     Input
