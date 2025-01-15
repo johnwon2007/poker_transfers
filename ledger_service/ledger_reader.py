@@ -26,6 +26,3 @@ def process_csv(file_path):
             print(f"An error occurred while processing the file: {e}")
     else:
         print(f"The file path provided does not exist: {file_path}")
-
-if __name__ == '__main__':
-    process_csv('/Users/johnwon/Desktop/Projects/poker_money/ledger_service/ledger_test.csv')

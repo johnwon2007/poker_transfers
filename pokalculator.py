@@ -1,13 +1,11 @@
 from PyQt5 import QtWidgets, QtCore
-# import pandas as pd
 from backend_service.ledger_to_transfer import ledger_tranfer_calculator as ltc
 from money_service.money_calculator import calculate_minimal_transfers as cmt
 
 class CsvDropBox(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Poker Transfer Calculator (떡준이꺼)")
-        #self.setFixedSize(1200, 900)
+        self.setWindowTitle("Poker Transfer Calculator")
         self.resize(400, 300)
         
         # Layout setup
@@ -75,8 +73,6 @@ class CsvDropBox(QtWidgets.QWidget):
     def load_csv(self, file_path):
         """Load and display the contents of the CSV file."""
         try:
-            # df = pd.read_csv(file_path)
-            # self.text_area.setText(f"Loaded: {file_path}\n\n{df.head().to_string()}")
             transfers, id_nick_net = ltc(file_path)
             self.print_edit_table(id_nick_net)
             self.print_transfers(transfers)
@@ -166,10 +162,9 @@ class CsvDropBox(QtWidgets.QWidget):
         self.edit_table.resizeColumnsToContents()
         self.edit_table.resizeRowsToContents()
         self.adjust_edit_table_height()
-        # self.adjust_window_to_table()
         
         # Add label and table to layout
-        self.edit_label = QtWidgets.QLabel("Edit: Nickname | net", self)
+        self.edit_label = QtWidgets.QLabel("Edit", self)
         self.edit_label.setStyleSheet("font-size: 16px; font-weight: bold;")
         self.text_area_exists()
         self.layout.addWidget(self.edit_label)
