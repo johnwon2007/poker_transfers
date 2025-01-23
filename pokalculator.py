@@ -69,13 +69,24 @@ class CsvDropBox(QtWidgets.QWidget):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open CSV File", "", "CSV Files (*.csv)")
         if file_path:
             self.load_csv(file_path)
+    
+    def print_error(self, error_msg):
+        # Text area to display the file contents
+            self.text_area_exists()
+            self.text_area = QtWidgets.QTextEdit(self)
+            self.text_area.setReadOnly(True)
+            self.layout.addWidget(self.text_area)
+            self.text_area.setText(error_msg)
 
     def load_csv(self, file_path):
         """Load and display the contents of the CSV file."""
         try:
-            transfers, id_nick_net = ltc(file_path)
-            self.print_edit_table(id_nick_net)
-            self.print_transfers(transfers)
+            transfers, id_nick_net, error_msg = ltc(file_path)
+            if error_msg:
+                self.print_error(self, error_msg)
+            else:
+                self.print_edit_table(id_nick_net)
+                self.print_transfers(transfers)
 
         except Exception as e:
             # Text area to display the file contents
@@ -177,18 +188,22 @@ class CsvDropBox(QtWidgets.QWidget):
         # Connect button's clicked signal to a wrapper function
         def on_calculate_button_clicked():
             # Extract data from the table into a dictionary
-            balances = {
-                self.edit_table.item(row, 0).text(): int(self.edit_table.item(row, 2).text())
+            id_nick_net = [ (self.edit_table.item(row, 1).text(),        # ID as string from column 1
+                self.edit_table.item(row, 0).text(),       # Nickname from column 0
+                int(self.edit_table.item(row, 2).text()))  # Net as int from column 2
                 for row in range(self.edit_table.rowCount())
-                if self.edit_table.item(row, 0) and self.edit_table.item(row, 2)  # Ensure items exist
-            }
+                if self.edit_table.item(row, 0) and self.edit_table.item(row, 1) and self.edit_table.item(row, 2)
+            ]
             
             # Debug print to verify the extracted data
-            print("Extracted balances dictionary:", balances)
+            print("Extracted balances dictionary:", id_nick_net)
             
             # Call the calculate_money function with the formatted data
-            transfers = cmt(balances)
-            self.print_transfers(transfers)
+            transfers, error_msg = cmt(id_nick_net)
+            if error_msg:
+                self.print_error(error_msg)
+            else:
+                self.print_transfers(transfers)
         
         self.calculate_button.clicked.connect(on_calculate_button_clicked)
         
