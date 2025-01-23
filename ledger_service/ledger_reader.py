@@ -18,10 +18,10 @@ def process_csv(file_path):
             # sum buy-in, buy-out, stack, net values by player_id and somehow handle the names
             grouped_df = df.groupby('player_id').agg(aggregations)
             # Convert player_nickname and net into a dictionary
-            balances = dict(zip(grouped_df['player_nickname'], grouped_df['net']))
+            #balances = dict(zip(grouped_df['player_nickname'], grouped_df['net']))
             id_nick_net = [(index, nickname, net) for index, nickname, net in zip(grouped_df.index, grouped_df['player_nickname'], grouped_df['net'])]
-            print(balances, id_nick_net)
-            return balances, id_nick_net
+            print(id_nick_net)
+            return id_nick_net
         except Exception as e:
             print(f"An error occurred while processing the file: {e}")
     else:

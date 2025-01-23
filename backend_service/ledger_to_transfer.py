@@ -3,5 +3,5 @@ from money_service.money_calculator import calculate_minimal_transfers as cmt
 
 def ledger_tranfer_calculator(file_path):
     balances, id_nick_net = pc(file_path)
-    transactions = cmt(balances)
+    transactions = cmt(id_nick_net)
     return transactions, id_nick_net
