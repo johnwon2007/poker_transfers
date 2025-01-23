@@ -233,6 +233,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Add tabs
         #self.tabs.addTab(self.online_tab, "Online")
         self.tabs.addTab(self.offline_tab, "Offline")
+        
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
