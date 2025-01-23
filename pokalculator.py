@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 from backend_service.ledger_to_transfer import ledger_tranfer_calculator as ltc
 from money_service.money_calculator import calculate_minimal_transfers as cmt
 
-class CsvDropBox(QtWidgets.QWidget):
+class OnlineWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Poker Transfer Calculator")
@@ -237,8 +237,35 @@ class CsvDropBox(QtWidgets.QWidget):
             self.text_area_exists()
             self.layout.addWidget(self.transfer_label)
             self.layout.addWidget(self.table_widget)
-        
-app = QtWidgets.QApplication([])
-window = CsvDropBox()
-window.show()
-app.exec_()
+
+class OfflineWidget(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel("This is the Offline tab.")
+        layout.addWidget(label)
+        self.setLayout(layout)
+
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Tabbed Interface Example")
+        self.resize(400, 300)
+
+        # Create the tab widget
+        self.tabs = QtWidgets.QTabWidget()
+        self.setCentralWidget(self.tabs)
+
+        # Create the tab pages
+        self.online_tab = OnlineWidget()
+        self.offline_tab = OfflineWidget()
+
+        # Add tabs
+        self.tabs.addTab(self.online_tab, "Online")
+        self.tabs.addTab(self.offline_tab, "Offline")
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication([])
+    mainWindow = MainWindow()
+    mainWindow.show()
+    app.exec_()
