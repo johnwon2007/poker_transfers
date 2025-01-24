@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from backend_service.ledger_to_transfer import ledger_tranfer_calculator as ltc
 from money_service.money_calculator import calculate_minimal_transfers as cmt
 
@@ -102,7 +102,6 @@ class OnlineWidget(QtWidgets.QWidget):
     def adjust_window_to_table(self):
         # Get table size
         if self.table_widget is not None:
-            print("table exists")
             table_width = self.table_widget.horizontalHeader().length() + self.table_widget.verticalScrollBar().sizeHint().width()
             table_height = self.table_widget.verticalHeader().length() + self.table_widget.horizontalScrollBar().sizeHint().height()
         else:
@@ -110,7 +109,6 @@ class OnlineWidget(QtWidgets.QWidget):
             table_height = 0
             
         if self.edit_table is not None:
-            print("edit table exists")
             edit_table_width = self.edit_table.horizontalHeader().length() + self.edit_table.verticalScrollBar().sizeHint().width()
             edit_table_height = self.edit_table.verticalHeader().length() + self.edit_table.horizontalScrollBar().sizeHint().height()
         else:
@@ -176,7 +174,7 @@ class OnlineWidget(QtWidgets.QWidget):
         self.edit_table = QtWidgets.QTableWidget(self)
         self.edit_table.setRowCount(len(id_nick_net))
         self.edit_table.setColumnCount(3)
-        width_adjuster = 30
+        width_adjuster = 20
         self.edit_table.setHorizontalHeaderLabels([" " * width_adjuster + 'Nickname' + " " * width_adjuster,
                                                    " " * width_adjuster + 'ID' + " " * width_adjuster,
                                                    " " * width_adjuster + 'Net' + " " * width_adjuster])
@@ -238,7 +236,7 @@ class OnlineWidget(QtWidgets.QWidget):
             self.table_widget = QtWidgets.QTableWidget(self)
             self.table_widget.setRowCount(len(transfers))
             self.table_widget.setColumnCount(3)
-            width_adjuster = 30
+            width_adjuster = 20
             self.table_widget.setHorizontalHeaderLabels([" " * width_adjuster + 'From' + " " * width_adjuster,
                                                          " " * width_adjuster + 'To' + " " * width_adjuster, 
                                                          " " * width_adjuster + 'Amount' + " " * width_adjuster])
@@ -267,7 +265,7 @@ class OfflineWidget(QtWidgets.QWidget):
         self.main_window = main_window
         self.layout = QtWidgets.QVBoxLayout(self)
         self.table = QtWidgets.QTableWidget(0, 5)
-        width_adjuster = 20
+        width_adjuster = 10
         self.table.setHorizontalHeaderLabels([" " * width_adjuster + "ID" + " " * width_adjuster, 
                                               " " * width_adjuster + "Nickname" + " " * width_adjuster , 
                                               " " * width_adjuster + "Buy-in" + " " * width_adjuster, 
@@ -314,7 +312,6 @@ class OfflineWidget(QtWidgets.QWidget):
     def adjust_window_to_table(self):
         # Get table size
         if self.table_widget is not None:
-            #print("table exists")
             table_width = self.table_widget.horizontalHeader().length() + self.table_widget.verticalScrollBar().sizeHint().width()
             table_height = self.table_widget.verticalHeader().length() + self.table_widget.horizontalScrollBar().sizeHint().height()
         else:
@@ -324,7 +321,6 @@ class OfflineWidget(QtWidgets.QWidget):
         if self.table is not None:
             edit_table_width = self.table.horizontalHeader().length() + self.table.verticalScrollBar().sizeHint().width()
             edit_table_height = self.table.verticalHeader().length() + self.table.horizontalScrollBar().sizeHint().height()
-            #print("input table exists", edit_table_height, edit_table_width)
         else:
             edit_table_height = 0
             edit_table_width = 0
@@ -475,22 +471,23 @@ class OfflineWidget(QtWidgets.QWidget):
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Tabbed Interface Example")
-        self.resize(400, 300)
+        self.setWindowTitle("Pokalculator v2")
+        self.setWindowIcon(QtGui.QIcon('img/logo.ico'))
 
         # Create the tab widget
         self.tabs = QtWidgets.QTabWidget()
         self.setCentralWidget(self.tabs)
         # Create the tab pages
         self.widget_size = [(400, 300), (400, 300)]
-        self.online_tab = OnlineWidget(self)
         self.offline_tab = OfflineWidget(self)
+        self.online_tab = OnlineWidget(self)
         # Add tabs
         self.tabs.addTab(self.online_tab, "Online")
         self.tabs.addTab(self.offline_tab, "Offline")
         
         # Connect the tabChanged signal to the resize method
         self.tabs.currentChanged.connect(self.on_tab_changed)
+        self.resize(400, 300)
 
     def on_tab_changed(self, index):
         """
