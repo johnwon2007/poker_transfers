@@ -303,10 +303,11 @@ class OfflineWidget(QtWidgets.QWidget):
         if self.table is not None:
             self.table.resizeColumnsToContents()
             self.table.resizeRowsToContents()
+            self.adjust_input_table_height()
         if self.table_widget is not None:
             self.table_widget.resizeColumnsToContents()
             self.table_widget.resizeRowsToContents()
-        self.adjust_input_table_height()
+            self.adjust_table_height()
         self.adjust_window_to_table()
         
     def adjust_window_to_table(self):
@@ -345,22 +346,25 @@ class OfflineWidget(QtWidgets.QWidget):
             self.table.removeRow(selected_row)
 
     def calculate_net(self, item):
-        row = item.row()
-        column = item.column()
-        self.adjust_table_size()
-        if column in (2, 3):  # Check if column is for Buy-in or Buy-out
-            # Ensure there is an item in both the Buy-in and Buy-out cells
-            buy_in_item = self.table.item(row, 2)
-            buy_out_item = self.table.item(row, 3)
-            
-            # Use '0' if the item is None or the text is empty
-            buy_in = int(buy_in_item.text() if buy_in_item and buy_in_item.text() else "0")
-            buy_out = int(buy_out_item.text() if buy_out_item and buy_out_item.text() else "0")
+        try:
+            row = item.row()
+            column = item.column()
+            self.adjust_table_size()
+            if column in (2, 3):  # Check if column is for Buy-in or Buy-out
+                # Ensure there is an item in both the Buy-in and Buy-out cells
+                buy_in_item = self.table.item(row, 2)
+                buy_out_item = self.table.item(row, 3)
+                
+                # Use '0' if the item is None or the text is empty
+                buy_in = int(buy_in_item.text() if buy_in_item and buy_in_item.text() else "0")
+                buy_out = int(buy_out_item.text() if buy_out_item and buy_out_item.text() else "0")
 
-            # Calculate and update the net value
-            net = buy_out - buy_in
-            self.table.setItem(row, 4, QtWidgets.QTableWidgetItem(str(net)))
-
+                # Calculate and update the net value
+                net = buy_out - buy_in
+                self.table.setItem(row, 4, QtWidgets.QTableWidgetItem(str(net)))
+        except Exception as e:
+            error_msg = f"Error found: {e}"
+            self.print_error(error_msg)
 
     def extract_table_data(self):
         data_list = []
@@ -371,16 +375,11 @@ class OfflineWidget(QtWidgets.QWidget):
                 id_value = int(self.table.item(row, 0).text())
                 nickname = self.table.item(row, 1).text()
                 net = int(self.table.item(row, 4).text())
-            except ValueError:
-                error_msg = f"Error processing row {row+1}: Invalid data found."
-                break  # Stop processing if an error occurs
-
-            data_list.append((id_value, nickname, net))
-
-        if error_msg:
-            return None, error_msg  # Return None to indicate an error
-        else:
-            return data_list, None
+                data_list.append((id_value, nickname, net))
+            except Exception as e:
+                error_msg = f"Error found: {e}"
+                return None, error_msg
+        return data_list, None
 
     def calculate_transfers(self):
         data_list, error_msg1 = self.extract_table_data()
@@ -421,10 +420,6 @@ class OfflineWidget(QtWidgets.QWidget):
                 self.table_widget.setItem(row, 1, QtWidgets.QTableWidgetItem(to_player))
                 self.table_widget.setItem(row, 2, QtWidgets.QTableWidgetItem(str(amount)))
             
-            # Optionally resize based on content
-            self.table_widget.resizeColumnsToContents()
-            self.table_widget.resizeRowsToContents()
-            #self.adjust_table_height()
             self.adjust_table_size()
             # Add table widget to layout
             self.transfer_label = QtWidgets.QLabel("Transfers", self)
