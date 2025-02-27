@@ -18,7 +18,12 @@ Pokalculator is a simple tool that helps users automatically calculate payouts f
 ## Installation
 1. Download the appropriate version of the tool:
    - **Windows**: `Pokalculator.exe`
+     - build code in windows
+     - pyinstaller --windowed --icon="img/logo.ico" pokalculator.py
    - **Mac**: `Pokalculator.dmg`
+     - build code in mac
+     - pyinstaller --icon="img/logo.icns" pokalculator.py
+  - The exe or dmg file will be saved under dist folder
 2. Save it in a location of your choice.
 3. Ensure you have a PokerNow ledger CSV file ready for processing (if using online mode).
 
