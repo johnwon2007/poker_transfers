@@ -24,6 +24,7 @@ Pokalculator is a simple tool that helps users automatically calculate payouts f
      - build code in mac
      - pyinstaller --icon="img/logo.icns" pokalculator.py
   - The exe or dmg file will be saved under dist folder
+  - You can learn more about from https://pyinstaller.org/en/stable/
 2. Save it in a location of your choice.
 3. Ensure you have a PokerNow ledger CSV file ready for processing (if using online mode).
 
